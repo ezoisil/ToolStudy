@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ public class SnapperTool : EditorWindow
     public float GridDrawExtent = 10;
     public int AngularDivision = 24;
 
+    private const float TAU = 6.2831855f;
     private SerializedObject _serializedObject;
     private SerializedProperty _gridSizeProperty;
     private SerializedProperty _gridDrawExtentProperty;
@@ -162,7 +164,23 @@ public class SnapperTool : EditorWindow
         {
             Vector2 position = new Vector2(originalPos.x, originalPos.y);
             float distance = position.magnitude;
+
+            float snappedDistance = distance.Round(GridSize);
+
+            float angleRad = Mathf.Atan2(position.y, position.x); // 0 to TAU
+            float angTurns = angleRad / TAU; // 0 to 1
+            float angleBetween = 360 / AngularDivision;
+            float angSnapped = Mathf.Round(angTurns * AngularDivision) * angleBetween;
+
+            Vector2 snappedDir = new Vector2(
+                Mathf.Cos(angSnapped * Mathf.Deg2Rad),
+                Mathf.Sin(angSnapped * Mathf.Deg2Rad));
+
+            Vector2 snappedVector = snappedDir * snappedDistance;
+            return snappedVector;
         }
+
+        return originalPos;
 
     }
 
