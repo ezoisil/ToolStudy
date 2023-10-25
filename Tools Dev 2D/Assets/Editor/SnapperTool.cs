@@ -7,8 +7,8 @@ public class SnapperTool : EditorWindow
 {
     public enum GridTypes
     {
-        Cartesian,
-        Polar,
+        Cartesian = 0,
+        Polar = 1,
     }
     const string UNDO_STR_SNAP = "snap objects";
 
@@ -34,15 +34,20 @@ public class SnapperTool : EditorWindow
         _gridDrawExtentProperty = _serializedObject.FindProperty("GridDrawExtent");
         _gridTypeProperty = _serializedObject.FindProperty("GridType");
         _angularDivisionProperty = _serializedObject.FindProperty("AngularDivision");
+        
+        LoadSavedConfiguration();
 
         Selection.selectionChanged += Repaint;
         SceneView.duringSceneGui += DuringSceneGui;
     }
 
+   
     private void OnDisable()
     {
         Selection.selectionChanged -= Repaint;
         SceneView.duringSceneGui -= DuringSceneGui;
+
+        SaveConfiguration();
     }
     private void OnGUI()
     {
@@ -73,6 +78,21 @@ public class SnapperTool : EditorWindow
 
         }
     }
+    private void LoadSavedConfiguration()
+    {
+        GridSize = EditorPrefs.GetFloat("SNAPPER_TOOL_GridSize", 1);
+        GridDrawExtent = EditorPrefs.GetFloat("SNAPPER_TOOL_GridDrawExtent", 10);
+        GridType = (GridTypes)EditorPrefs.GetInt("SNAPPER_TOOL_GridType", 0);
+        AngularDivision = EditorPrefs.GetInt("SNAPPER_TOOL_AngularDivision", 24);
+    }
+    private void SaveConfiguration()
+    {
+        EditorPrefs.SetFloat("SNAPPER_TOOL_GridSize", GridSize);
+        EditorPrefs.SetFloat("SNAPPER_TOOL_GridDrawExtent", GridDrawExtent);
+        EditorPrefs.SetInt("SNAPPER_TOOL_GridType", (int)GridType);
+        EditorPrefs.SetInt("SNAPPER_TOOL_AngularDivision", AngularDivision);
+    }
+
     private void DuringSceneGui(SceneView view)
     {
         if (Event.current.type != EventType.Repaint) return;
@@ -167,7 +187,7 @@ public class SnapperTool : EditorWindow
 
             float angleRad = Mathf.Atan2(position.y, position.x); // 0 to TAU
             float angTurns = angleRad / TAU; // 0 to 1
-            float angRadSnapped = angTurns.Round( 1f / AngularDivision) * TAU;
+            float angRadSnapped = angTurns.Round(1f / AngularDivision) * TAU;
 
             Vector3 snappedDir = new Vector3(
                 Mathf.Cos(angRadSnapped),
