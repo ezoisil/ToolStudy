@@ -130,15 +130,13 @@ public class SnapperTool : EditorWindow
             Handles.DrawWireDisc(Vector3.zero, Vector3.forward, GridSize * i);
         }
 
-        float angleBetween = 360 / AngularDivision;
-
         for (int i = 0; i < AngularDivision; i++)
         {
-            var angle = angleBetween * i;
-            float xCoord = Mathf.Cos((angle) * Mathf.Deg2Rad) * GridSize * lineCount;
-            float yCoord = Mathf.Sin((angle) * Mathf.Deg2Rad) * GridSize * lineCount;
-            Vector2 pos = new Vector2(xCoord, yCoord);
-            Handles.DrawAAPolyLine(Vector2.zero, pos);
+            var t = i / (float)AngularDivision;
+            float xCoord = Mathf.Cos(TAU * t);
+            float yCoord = Mathf.Sin(TAU * t);
+            Vector3 pos = new Vector3(xCoord, yCoord, 0) * GridSize * lineCount;
+            Handles.DrawAAPolyLine(Vector3.zero, pos);
         }
     }
     private void SnapSelectedGameObjects()
@@ -169,14 +167,14 @@ public class SnapperTool : EditorWindow
 
             float angleRad = Mathf.Atan2(position.y, position.x); // 0 to TAU
             float angTurns = angleRad / TAU; // 0 to 1
-            float angleBetween = 360 / AngularDivision;
-            float angSnapped = Mathf.Round(angTurns * AngularDivision) * angleBetween;
+            float angRadSnapped = angTurns.Round( 1f / AngularDivision) * TAU;
 
-            Vector2 snappedDir = new Vector2(
-                Mathf.Cos(angSnapped * Mathf.Deg2Rad),
-                Mathf.Sin(angSnapped * Mathf.Deg2Rad));
+            Vector3 snappedDir = new Vector3(
+                Mathf.Cos(angRadSnapped),
+                Mathf.Sin(angRadSnapped),
+                0);
 
-            Vector2 snappedVector = snappedDir * snappedDistance;
+            Vector3 snappedVector = snappedDir * snappedDistance;
             return snappedVector;
         }
 
